@@ -16,15 +16,21 @@ with open(CSVFILE,"r") as f:
         for i in range(cols):
             data[i].append(points[i])
 
+rows = len(data[0])
+
 fig, ax = plt.subplots()
 
 ax.grid(axis='y',color='#DDDDDD')
 ax.set_axisbelow(True)
 
-x_indexes = range(1,len(data[0])+1)
+x_indexes = range(1,rows+1)
 
 # Graph the two bars (each bar composed of 3 sub-bars) per sample.
 barsets = []
+cumheights = [
+    [0 for _ in range(rows)]
+    for _ in range(2)
+]
 for i in range(cols//2):
     for barpos in range(2):
         adjustedindex = [
@@ -32,13 +38,18 @@ for i in range(cols//2):
             for i in x_indexes
         ]
 
+        index = (i*2)+barpos
+        heights = data[index]
+        cumheights[barpos] = [new+old for new,old in zip(heights,cumheights[barpos])]
+
         barsets.append(ax.bar(
             adjustedindex,
-            data[(i*2)+barpos],
+            cumheights[barpos],
             width=COLWIDTH,
-            edgecolor="black"
+            edgecolor="black",
+            zorder=cols-index # ensures bars are smallest to largest
         ))
-
+print(cumheights)
 # Labels each pair of bars as the appropriate sample.
 ax.set_xticks(
     x_indexes,
